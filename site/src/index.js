@@ -76,7 +76,121 @@ import "./panels/group-panel-valuable-drops.js";
 // Initialize all custom panels
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Initializing custom panels...');
+  
+  // Wait for router to be available before registering panels
+  const checkRouter = () => {
+    if (window.router) {
+      console.log('Router found, registering custom panels...');
+      registerCustomPanels();
+    } else {
+      console.log('Router not yet available, waiting...');
+      setTimeout(checkRouter, 500);
+    }
+  };
+  
+  // Start checking for router
+  setTimeout(checkRouter, 500);
 });
+
+// Function to register all custom panels with the router
+function registerCustomPanels() {
+  // Register activities panel route
+  registerPanelRoute('activities', 'group-panel-activities', '📋', 'Group Activities', 'Track all group activities and achievements');
+  
+  // Register slayers panel route
+  registerPanelRoute('slayer-tasks', 'group-panel-slayers', '🗡️', 'Slayer Tasks', 'Track slayer tasks across group members');
+  
+  // Register valuable drops panel route
+  registerPanelRoute('valuable-drops', 'group-panel-valuable-drops', '💎', 'Valuable Drops', 'Track valuable item drops for the group');
+  
+  // Register challenges panel route
+  registerPanelRoute('challenges', 'group-panel-challenges', '🏆', 'Group Challenges', 'Custom challenges for group members');
+  
+  // Register DPS calculator panel route
+  registerPanelRoute('dps-calculator', 'group-panel-dps-calculator', '⚔️', 'DPS Calculator', 'Calculate damage per second for different setups');
+  
+  // Register boss strategy panel route
+  registerPanelRoute('boss-strategy', 'group-panel-boss-strategy', '👹', 'Boss Strategy', 'Group boss tactics and strategies');
+  
+  // Register shared calendar panel route
+  registerPanelRoute('shared-calendar', 'group-panel-shared-calendar', '📅', 'Shared Calendar', 'Coordinate group activities');
+  
+  // Register milestones panel route
+  registerPanelRoute('milestones', 'group-panel-group-milestones', '🏁', 'Group Milestones', 'Track important group achievements');
+}
+
+// Helper function to register panel routes
+function registerPanelRoute(path, elementName, icon, title, description) {
+  try {
+    // Register route
+    window.router.register(`/panel/${path}`, {
+      path: `/panel/${path}`,
+      enable() {
+        console.log(`Enabling ${title} panel`);
+        const panelsContainer = document.querySelector('.panels-container');
+        if (!panelsContainer) {
+          console.warn('No panels container found');
+          return;
+        }
+        
+        let panel = document.querySelector(elementName);
+        if (!panel) {
+          panel = document.createElement(elementName);
+          panelsContainer.appendChild(panel);
+        }
+        panel.style.display = 'block';
+      },
+      disable() {
+        console.log(`Disabling ${title} panel`);
+        const panel = document.querySelector(elementName);
+        if (panel) {
+          panel.style.display = 'none';
+        }
+      }
+    });
+    
+    // Add panel link to panels page
+    setTimeout(() => {
+      addPanelLink(path, icon, title, description);
+    }, 1000);
+    
+    console.log(`Registered ${title} panel route`);
+  } catch (err) {
+    console.error(`Error registering ${title} panel:`, err);
+  }
+}
+
+// Helper function to add panel link to panels page
+function addPanelLink(path, icon, title, description) {
+  const panelsPage = document.querySelector('panels-page');
+  if (panelsPage) {
+    const panelsContent = panelsPage.querySelector('.panels-page-content');
+    if (panelsContent) {
+      // Find or create links container
+      let linksContainer = panelsContent.querySelector('.custom-panel-links');
+      if (!linksContainer) {
+        linksContainer = document.createElement('div');
+        linksContainer.className = 'panel-links custom-panel-links';
+        linksContainer.innerHTML = '<h3>Custom Panels</h3>';
+        panelsContent.appendChild(linksContainer);
+      }
+      
+      // Add link
+      const link = document.createElement('a');
+      link.className = 'panel-link';
+      link.href = `/panel/${path}`;
+      link.innerHTML = `
+        <div class="panel-link-icon">${icon}</div>
+        <div class="panel-link-info">
+          <div class="panel-link-name">${title}</div>
+          <div class="panel-link-description">${description}</div>
+        </div>
+      `;
+      
+      linksContainer.appendChild(link);
+    }
+  }
+}
 
 // Add custom panel registration directly in index.js
 document.addEventListener('DOMContentLoaded', () => {
