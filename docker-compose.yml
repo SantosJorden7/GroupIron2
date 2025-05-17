@@ -3,7 +3,7 @@ services:
   group-ironmen-tracker-frontend:
     build:
       context: ./site
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.custom
     environment:
       - HOST_URL=${HOST_URL}
     restart: always

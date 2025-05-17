@@ -1,0 +1,36 @@
+<div class="panel-header">🏆 Group Challenges</div>
+<div class="panel-content group-challenges-panel">
+  <div class="challenges-container">
+    <div class="challenges-header">
+      <h3>Group Challenges</h3>
+      <div class="data-source-indicator">
+        <span class="data-source plugin" title="Data from RuneLite Plugin">P</span>
+        <span class="data-source wom" title="Data from Wise Old Man API">W</span>
+        <span class="last-updated"></span>
+      </div>
+    </div>
+    
+    <div class="filter-controls">
+      <button class="filter-button active" data-filter="active">Active</button>
+      <button class="filter-button" data-filter="completed">Completed</button>
+      <button class="filter-button" data-filter="expired">Expired</button>
+      <button class="filter-button" data-filter="all">All</button>
+    </div>
+    
+    <div class="challenges-list">
+      <!-- Challenges will be rendered here -->
+      <div class="loading-container">
+        <div class="loading-text">Loading challenges...</div>
+      </div>
+    </div>
+    
+    <div class="error-container" style="display: none;">
+      <div class="error-text"></div>
+      <button class="retry-button">Retry</button>
+    </div>
+    
+    <div class="challenges-actions">
+      <button class="add-challenge-button">Add New Challenge</button>
+    </div>
+  </div>
+</div>

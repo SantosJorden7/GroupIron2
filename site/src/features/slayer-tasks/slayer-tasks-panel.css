@@ -1,0 +1,197 @@
+/**
+ * Slayer Tasks Panel CSS
+ * Follows the OSRS-style UI guidelines with RuneScape-like layout
+ */
+
+/* Panel Container */
+slayer-tasks-panel {
+  display: block;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  color: var(--primary-text);
+}
+
+/* Loading State */
+.slayer-tasks-panel .loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.slayer-tasks-panel .loading-text {
+  position: relative;
+  padding-left: 25px;
+}
+
+.slayer-tasks-panel .loading-text::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.slayer-tasks-panel .error-container {
+  padding: 15px;
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  margin: 10px 0;
+  text-align: center;
+}
+
+.slayer-tasks-panel .error-text {
+  color: #cc0000;
+  margin-bottom: 10px;
+}
+
+/* Empty State */
+.slayer-tasks-panel .empty-state {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Tasks List */
+.slayer-tasks-panel .tasks-container {
+  padding: 0;
+  margin: 0;
+}
+
+.slayer-tasks-panel .tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.slayer-tasks-panel .tasks-header h3 {
+  margin: 0;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+.slayer-tasks-panel .data-source-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.slayer-tasks-panel .last-updated {
+  margin-left: 5px;
+  opacity: 0.7;
+}
+
+/* Task Items */
+.slayer-tasks-panel .task-item {
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  margin-bottom: 8px;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slayer-tasks-panel .task-header {
+  background-color: var(--header-bg);
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.slayer-tasks-panel .task-monster {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--header-text);
+}
+
+.slayer-tasks-panel .task-count {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.slayer-tasks-panel .task-details {
+  padding: 8px 10px;
+}
+
+.slayer-tasks-panel .task-assignee,
+.slayer-tasks-panel .task-master {
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.slayer-tasks-panel .label {
+  color: var(--secondary-text);
+  margin-right: 5px;
+}
+
+.slayer-tasks-panel .value {
+  color: var(--primary-text);
+  font-weight: bold;
+}
+
+.slayer-tasks-panel .task-progress {
+  height: 6px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.slayer-tasks-panel .progress-bar {
+  height: 100%;
+  background-color: var(--orange);
+  transition: width 0.3s ease;
+}
+
+.slayer-tasks-panel .task-actions {
+  display: flex;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Buttons */
+.slayer-tasks-panel button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 4px 8px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 60px;
+  text-align: center;
+}
+
+.slayer-tasks-panel button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.slayer-tasks-panel .add-task-button {
+  background-color: var(--button-success-bg, #305830);
+  border-color: var(--button-success-border, #254025);
+}
+
+.slayer-tasks-panel .complete-button {
+  background-color: var(--button-success-bg, #305830);
+  border-color: var(--button-success-border, #254025);
+}
+
+.slayer-tasks-panel .tasks-actions {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,20 @@
+###############################################
+# Frontend Image with Build Process
+###############################################
+FROM node:16.10.0-alpine as production-frontend
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY ["./package.json", "./package-lock.json*", "./"]
+RUN npm install --ignore-scripts
+
+# Copy all project files
+COPY . .
+
+# Build the application
+RUN node build.js --prod
+
+# Run the application
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["npm run serve"]

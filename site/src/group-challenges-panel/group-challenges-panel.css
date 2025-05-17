@@ -1,0 +1,280 @@
+/**
+ * Group Challenges Panel Styles
+ * Follows the OSRS style guidelines with RuneScape-like layout
+ */
+
+.group-challenges-panel {
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  color: var(--primary-text);
+}
+
+/* Panel header styles */
+.group-challenges-panel .challenges-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.group-challenges-panel h3 {
+  margin: 0;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+/* Data source indicators */
+.group-challenges-panel .data-source-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.group-challenges-panel .data-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 4px;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  font-size: 12px;
+}
+
+.group-challenges-panel .data-source.plugin {
+  background-color: #4a934a;
+  color: white;
+}
+
+.group-challenges-panel .data-source.wom {
+  background-color: #3a67a8;
+  color: white;
+}
+
+.group-challenges-panel .data-source.wiki {
+  background-color: #a83a3a;
+  color: white;
+}
+
+.group-challenges-panel .last-updated {
+  margin-left: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Filter controls */
+.group-challenges-panel .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.group-challenges-panel .filter-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 4px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.group-challenges-panel .filter-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.group-challenges-panel .filter-button.active {
+  background-color: var(--orange);
+  border-color: #a45e00;
+  color: #000;
+}
+
+/* Loading state */
+.group-challenges-panel .loading-container {
+  padding: 15px;
+  text-align: center;
+}
+
+.group-challenges-panel .loading-text {
+  position: relative;
+  padding-left: 24px;
+}
+
+.group-challenges-panel .loading-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.group-challenges-panel .error-container {
+  background-color: rgba(168, 58, 58, 0.1);
+  border: 1px solid rgba(168, 58, 58, 0.3);
+  padding: 12px;
+  margin: 10px 0;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.group-challenges-panel .error-text {
+  color: #a83a3a;
+  margin-bottom: 8px;
+}
+
+.group-challenges-panel .retry-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 3px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  cursor: pointer;
+}
+
+/* Challenge items */
+.group-challenges-panel .challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-challenges-panel .challenge-item {
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.group-challenges-panel .challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--header-bg);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.group-challenges-panel .challenge-title {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--header-text);
+}
+
+.group-challenges-panel .challenge-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.group-challenges-panel .status-active {
+  background-color: #4a934a;
+  color: white;
+}
+
+.group-challenges-panel .status-completed {
+  background-color: #3a67a8;
+  color: white;
+}
+
+.group-challenges-panel .status-expired {
+  background-color: #a83a3a;
+  color: white;
+}
+
+.group-challenges-panel .challenge-content {
+  padding: 12px;
+}
+
+.group-challenges-panel .challenge-description {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.group-challenges-panel .challenge-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: var(--secondary-text);
+}
+
+.group-challenges-panel .challenge-creator {
+  margin-right: 10px;
+}
+
+.group-challenges-panel .challenge-dates > div {
+  margin-bottom: 2px;
+}
+
+.group-challenges-panel .challenge-reward {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--orange);
+}
+
+.group-challenges-panel .challenge-actions {
+  display: flex;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-end;
+}
+
+.group-challenges-panel .complete-button {
+  background-color: #305830;
+  border: 1px solid #254025;
+  color: white;
+  padding: 4px 12px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.group-challenges-panel .complete-button:hover {
+  background-color: #3a6a3a;
+}
+
+/* Add challenge button */
+.group-challenges-panel .challenges-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.group-challenges-panel .add-challenge-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 6px 15px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.group-challenges-panel .add-challenge-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Empty state */
+.group-challenges-panel .empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--secondary-text);
+}

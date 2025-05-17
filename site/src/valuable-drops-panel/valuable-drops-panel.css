@@ -1,0 +1,257 @@
+/**
+ * Valuable Drops Panel Styles
+ * Follows the OSRS style guidelines with RuneScape-like layout
+ */
+
+.valuable-drops-panel {
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  color: var(--primary-text);
+}
+
+/* Panel header styles */
+.valuable-drops-panel .drops-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.valuable-drops-panel h3 {
+  margin: 0;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+/* Data source indicators */
+.valuable-drops-panel .data-source-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.valuable-drops-panel .data-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 4px;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  font-size: 12px;
+}
+
+.valuable-drops-panel .data-source.plugin {
+  background-color: #4a934a;
+  color: white;
+}
+
+.valuable-drops-panel .data-source.wom {
+  background-color: #3a67a8;
+  color: white;
+}
+
+.valuable-drops-panel .data-source.wiki {
+  background-color: #a83a3a;
+  color: white;
+}
+
+.valuable-drops-panel .last-updated {
+  margin-left: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Sort controls */
+.valuable-drops-panel .sort-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.valuable-drops-panel .sort-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 4px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 2px;
+  position: relative;
+}
+
+.valuable-drops-panel .sort-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.valuable-drops-panel .sort-button.active {
+  background-color: var(--orange);
+  border-color: #a45e00;
+  color: #000;
+}
+
+.valuable-drops-panel .sort-direction {
+  margin-left: 3px;
+  font-weight: bold;
+}
+
+/* Loading state */
+.valuable-drops-panel .loading-container {
+  padding: 15px;
+  text-align: center;
+}
+
+.valuable-drops-panel .loading-text {
+  position: relative;
+  padding-left: 24px;
+}
+
+.valuable-drops-panel .loading-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.valuable-drops-panel .error-container {
+  background-color: rgba(168, 58, 58, 0.1);
+  border: 1px solid rgba(168, 58, 58, 0.3);
+  padding: 12px;
+  margin: 10px 0;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.valuable-drops-panel .error-text {
+  color: #a83a3a;
+  margin-bottom: 8px;
+}
+
+.valuable-drops-panel .retry-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 3px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  cursor: pointer;
+}
+
+/* Drop items */
+.valuable-drops-panel .drops-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.valuable-drops-panel .drop-item {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.valuable-drops-panel .drop-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.valuable-drops-panel .drop-icon img {
+  max-width: 32px;
+  max-height: 32px;
+}
+
+.valuable-drops-panel .drop-details {
+  flex: 1;
+}
+
+.valuable-drops-panel .drop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.valuable-drops-panel .drop-name {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+.valuable-drops-panel .drop-price {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: #e6c93c; /* Gold color */
+}
+
+.valuable-drops-panel .drop-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.valuable-drops-panel .drop-player {
+  margin-left: 5px;
+}
+
+.valuable-drops-panel .drop-info {
+  display: flex;
+  gap: 10px;
+}
+
+.valuable-drops-panel .drop-date {
+  opacity: 0.7;
+}
+
+.valuable-drops-panel .drop-rarity {
+  color: #e6c93c; /* Gold color */
+}
+
+/* Actions */
+.valuable-drops-panel .drops-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.valuable-drops-panel .refresh-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 6px 15px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.valuable-drops-panel .refresh-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Empty state */
+.valuable-drops-panel .empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--secondary-text);
+}

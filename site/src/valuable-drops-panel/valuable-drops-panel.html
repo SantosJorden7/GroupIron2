@@ -1,0 +1,45 @@
+<div class="panel-header">💎 Valuable Drops</div>
+<div class="panel-content valuable-drops-panel">
+  <div class="drops-container">
+    <div class="drops-header">
+      <h3>Valuable Drops</h3>
+      <div class="data-source-indicator">
+        <span class="data-source plugin" title="Data from RuneLite Plugin">P</span>
+        <span class="data-source wom" title="Data from Wise Old Man API">W</span>
+        <span class="data-source wiki" title="Data from OSRS Wiki">K</span>
+        <span class="last-updated"></span>
+      </div>
+    </div>
+    
+    <div class="sort-controls">
+      <button class="sort-button active" data-sort="value">
+        Value <span class="sort-direction">↓</span>
+      </button>
+      <button class="sort-button" data-sort="date">
+        Date <span class="sort-direction"></span>
+      </button>
+      <button class="sort-button" data-sort="name">
+        Name <span class="sort-direction"></span>
+      </button>
+      <button class="sort-button" data-sort="rarity">
+        Rarity <span class="sort-direction"></span>
+      </button>
+    </div>
+    
+    <div class="drops-list">
+      <!-- Drops will be rendered here -->
+      <div class="loading-container">
+        <div class="loading-text">Loading valuable drops...</div>
+      </div>
+    </div>
+    
+    <div class="error-container" style="display: none;">
+      <div class="error-text"></div>
+      <button class="retry-button">Retry</button>
+    </div>
+    
+    <div class="drops-actions">
+      <button class="refresh-button">Refresh from Collection Log</button>
+    </div>
+  </div>
+</div>

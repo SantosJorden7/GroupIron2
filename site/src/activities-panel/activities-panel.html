@@ -1,0 +1,33 @@
+<div class="panel-header">📋 Activities</div>
+<div class="panel-content activities-panel">
+  <div class="activities-container">
+    <div class="activities-header">
+      <h3>Group Activities</h3>
+      <div class="data-source-indicator">
+        <span class="data-source plugin" title="Data from RuneLite Plugin">P</span>
+        <span class="data-source wom" title="Data from Wise Old Man API">W</span>
+        <span class="last-updated"></span>
+      </div>
+    </div>
+    
+    <div class="filter-controls">
+      <button class="filter-button active" data-filter="all">All</button>
+      <button class="filter-button" data-filter="level-up">Levels</button>
+      <button class="filter-button" data-filter="drop">Drops</button>
+      <button class="filter-button" data-filter="quest">Quests</button>
+      <button class="filter-button" data-filter="boss">Bosses</button>
+    </div>
+    
+    <div class="activities-list">
+      <!-- Activities will be rendered here -->
+      <div class="loading-container">
+        <div class="loading-text">Loading activities...</div>
+      </div>
+    </div>
+    
+    <div class="error-container" style="display: none;">
+      <div class="error-text"></div>
+      <button class="retry-button">Retry</button>
+    </div>
+  </div>
+</div>

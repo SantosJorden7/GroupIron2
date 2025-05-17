@@ -1,0 +1,224 @@
+/**
+ * Activities Panel Styles
+ * Follows the OSRS style guidelines with RuneScape-like layout
+ */
+
+.activities-panel {
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  color: var(--primary-text);
+}
+
+/* Panel header styles */
+.activities-panel .activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.activities-panel h3 {
+  margin: 0;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+/* Data source indicators */
+.activities-panel .data-source-indicator {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.activities-panel .data-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 4px;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  font-size: 12px;
+}
+
+.activities-panel .data-source.plugin {
+  background-color: #4a934a;
+  color: white;
+}
+
+.activities-panel .data-source.wom {
+  background-color: #3a67a8;
+  color: white;
+}
+
+.activities-panel .data-source.wiki {
+  background-color: #a83a3a;
+  color: white;
+}
+
+.activities-panel .last-updated {
+  margin-left: 5px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Filter controls */
+.activities-panel .filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.activities-panel .filter-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 4px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.activities-panel .filter-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.activities-panel .filter-button.active {
+  background-color: var(--orange);
+  border-color: darken(var(--orange), 10%);
+  color: #000;
+}
+
+/* Loading state */
+.activities-panel .loading-container {
+  padding: 15px;
+  text-align: center;
+}
+
+.activities-panel .loading-text {
+  position: relative;
+  padding-left: 24px;
+}
+
+.activities-panel .loading-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--orange);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.activities-panel .error-container {
+  background-color: rgba(168, 58, 58, 0.1);
+  border: 1px solid rgba(168, 58, 58, 0.3);
+  padding: 12px;
+  margin: 10px 0;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.activities-panel .error-text {
+  color: #a83a3a;
+  margin-bottom: 8px;
+}
+
+.activities-panel .retry-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  padding: 3px 10px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  cursor: pointer;
+}
+
+/* Activity items */
+.activities-panel .activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activities-panel .activity-item {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.activities-panel .activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.activities-panel .activity-content {
+  flex: 1;
+}
+
+.activities-panel .activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.activities-panel .activity-member {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  color: var(--orange);
+}
+
+.activities-panel .activity-time {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.activities-panel .activity-description {
+  font-size: 13px;
+}
+
+/* Activity type styling */
+.activities-panel .activity-item[data-type="level-up"] .activity-icon {
+  background-color: #4a934a;
+}
+
+.activities-panel .activity-item[data-type="drop"] .activity-icon {
+  background-color: #9b7d27;
+}
+
+.activities-panel .activity-item[data-type="quest"] .activity-icon {
+  background-color: #3a67a8;
+}
+
+.activities-panel .activity-item[data-type="boss"] .activity-icon {
+  background-color: #a83a3a;
+}
+
+/* Empty state */
+.activities-panel .empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--secondary-text);
+}

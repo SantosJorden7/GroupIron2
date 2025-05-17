@@ -158,9 +158,7 @@ function build() {
     minify: false,
     format: 'esm',
     outfile: 'public/app.js',
-    plugins: [componentBuildPlugin, minifyJsPlugin, htmlBuildPlugin, buildLoggingPlugin, mapJsonPlugin],
-    // Explicitly exclude the features directory as we've migrated to Web Components
-    exclude: ['src/features/**/*']
+    plugins: [componentBuildPlugin, minifyJsPlugin, htmlBuildPlugin, buildLoggingPlugin, mapJsonPlugin]
   }).catch((error) => console.error(error));
 }
 

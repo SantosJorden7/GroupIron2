@@ -1,0 +1,192 @@
+/**
+ * Shared Panel Styles
+ * 
+ * Common styles for all custom panels to maintain visual consistency
+ * with the original Group Iron Site project.
+ */
+
+/* Panel container */
+.rs-panel {
+  background-color: var(--background);
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+/* Panel header */
+.rs-panel-header {
+  background-color: var(--header-bg);
+  padding: 8px 16px;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  font-size: 18px;
+  color: var(--header-text);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Panel content */
+.rs-panel-content {
+  padding: 16px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 14px;
+  color: var(--primary-text);
+}
+
+/* OSRS-style buttons */
+.rs-button {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: 2px;
+  color: var(--button-text);
+  cursor: pointer;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 14px;
+  padding: 4px 12px;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.rs-button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* Badges for data sources */
+.data-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-right: 4px;
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  font-size: 12px;
+}
+
+.data-source.plugin {
+  background-color: var(--source-plugin-bg, #4a934a);
+  color: var(--source-plugin-text, white);
+}
+
+.data-source.wom {
+  background-color: var(--source-wom-bg, #3a67a8);
+  color: var(--source-wom-text, white);
+}
+
+.data-source.wiki {
+  background-color: var(--source-wiki-bg, #a83a3a);
+  color: var(--source-wiki-text, white);
+}
+
+/* Status badges */
+.rs-badge {
+  background-color: var(--badge-bg);
+  border-radius: 9999px;
+  color: var(--badge-text);
+  display: inline-block;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 12px;
+  padding: 2px 8px;
+  margin: 0 4px;
+}
+
+/* Grid layouts */
+.rs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+/* List layouts */
+.rs-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rs-list-item {
+  border-bottom: 1px solid var(--border-color-light);
+  padding: 8px 0;
+}
+
+.rs-list-item:last-child {
+  border-bottom: none;
+}
+
+/* Tables */
+.rs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rs-table th,
+.rs-table td {
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.rs-table th {
+  font-family: rsbold, 'RuneScape Bold', sans-serif;
+  background-color: var(--table-header-bg, rgba(0, 0, 0, 0.1));
+}
+
+/* Input styles */
+.rs-input {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  color: var(--input-text);
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  font-size: 14px;
+  padding: 4px 8px;
+}
+
+/* Loading indicator */
+.rs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  color: var(--primary-text);
+}
+
+.rs-loading::after {
+  content: '';
+  margin-left: 8px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--primary-text);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: rs-spin 1s linear infinite;
+}
+
+@keyframes rs-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error message */
+.rs-error {
+  background-color: var(--error-bg, rgba(255, 0, 0, 0.1));
+  border: 1px solid var(--error-border, #ff0000);
+  border-radius: 2px;
+  color: var(--error-text, #ff0000);
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+/* Success message */
+.rs-success {
+  background-color: var(--success-bg, rgba(0, 255, 0, 0.1));
+  border: 1px solid var(--success-border, #00ff00);
+  border-radius: 2px;
+  color: var(--success-text, #00aa00);
+  font-family: rssmall, 'RuneScape Small', sans-serif;
+  padding: 8px;
+  margin: 8px 0;
+}
