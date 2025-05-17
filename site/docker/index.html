@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Group Ironmen - Custom Panels</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body, html { margin: 0; padding: 0; height: 100%; }
+    body {
+      font-family: sans-serif;
+      background: var(--background);
+      color: var(--primary-text);
+      --orange: #ff981f;
+      --orange-transparent: rgba(255, 152, 31, 0.05);
+      --yellow: #ffff00;
+      --background: #111111;
+      --primary-text: #ffffff;
+      --secondary-text: rgba(255, 255, 255, 0.6);
+      --border: #474747;
+    }
+    .panel-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .header {
+      background: var(--orange);
+      color: black;
+      padding: 10px 20px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    /* Add font faces for RuneScape fonts */
+    @font-face {
+      font-family: "rsbold";
+      src: url("/fonts/RuneScape-Bold-12.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "rssmall";
+      src: url("/fonts/RuneScape-Plain-11.woff2") format("woff2");
+    }
+    /* Source badge styles */
+    .source-badge {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      text-align: center;
+      border-radius: 50%;
+      background: var(--orange);
+      color: black;
+      font-weight: bold;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Group Ironmen Custom Panels</h1>
+  </div>
+  <div class="panel-container">
+    <group-panel-activities></group-panel-activities>
+    <group-panel-slayers></group-panel-slayers>
+    <group-panel-valuable-drops></group-panel-valuable-drops>
+    <group-panel-challenges></group-panel-challenges>
+    <group-panel-dps-calculator></group-panel-dps-calculator>
+    <group-panel-boss-strategy></group-panel-boss-strategy>
+    <group-panel-shared-calendar></group-panel-shared-calendar>
+    <group-panel-group-milestones></group-panel-group-milestones>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

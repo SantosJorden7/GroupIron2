@@ -15,8 +15,12 @@ COPY . .
 # Create a custom standalone solution
 RUN mkdir -p public
 
-# Create our own standalone index.html file
-RUN echo "<!DOCTYPE html>" > public/index.html && \
+# Create a single-file index.html for reliability
+COPY ./docker/index.html /app/public/index.html
+
+# In case the copy fails, create a fallback index.html
+RUN if [ ! -f public/index.html ]; then \
+    echo "<!DOCTYPE html>" > public/index.html && \
     echo "<html><head><title>Group Ironmen - Custom Panels</title>" >> public/index.html && \
     echo "<meta charset=\"UTF-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />" >> public/index.html && \
     echo "<style>" >> public/index.html && \
@@ -37,7 +41,8 @@ RUN echo "<!DOCTYPE html>" > public/index.html && \
     echo "<group-panel-group-milestones></group-panel-group-milestones>" >> public/index.html && \
     echo "</div>" >> public/index.html && \
     echo "<script src=\"/app.js\"></script>" >> public/index.html && \
-    echo "</body></html>" >> public/index.html
+    echo "</body></html>" >> public/index.html; \
+    fi
 
 # Build the JS bundle
 RUN node build.js

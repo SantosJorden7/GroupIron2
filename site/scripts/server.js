@@ -34,6 +34,52 @@ app.use(compression());
 app.use(express.static('public'));
 app.use(express.static('.'));
 
+// Check if index.html exists in public directory
+const fs = require('fs');
+const publicIndexPath = path.resolve('public', 'index.html');
+if (!fs.existsSync(publicIndexPath)) {
+  console.log('Warning: public/index.html not found! Creating a basic one...');
+  // Create a minimal index.html if it doesn't exist
+  const customPanelsHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Group Ironmen - Custom Panels</title>
+  <meta charset="UTF-8" />
+  <style>
+    body { font-family: sans-serif; background: #111; color: #eee; }
+    body { --orange: #ff981f; --background: #111; --primary-text: #fff; --border: #474747; }
+    .panel-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+    .header { background: var(--orange); color: black; padding: 10px 20px; text-align: center; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="header"><h1>Group Ironmen Custom Panels</h1></div>
+  <div class="panel-container">
+    <group-panel-activities></group-panel-activities>
+    <group-panel-slayers></group-panel-slayers>
+    <group-panel-valuable-drops></group-panel-valuable-drops>
+    <group-panel-challenges></group-panel-challenges>
+    <group-panel-dps-calculator></group-panel-dps-calculator>
+    <group-panel-boss-strategy></group-panel-boss-strategy>
+    <group-panel-shared-calendar></group-panel-shared-calendar>
+    <group-panel-group-milestones></group-panel-group-milestones>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>`;
+  
+  try {
+    // Make sure the public directory exists
+    if (!fs.existsSync('public')) {
+      fs.mkdirSync('public', { recursive: true });
+    }
+    fs.writeFileSync(publicIndexPath, customPanelsHtml);
+    console.log('Created fallback index.html successfully');
+  } catch (err) {
+    console.error('Error creating fallback index.html:', err);
+  }
+}
+
 if (backend) {
   console.log(`Backend for api calls: ${backend}`);
   app.use(express.json());
