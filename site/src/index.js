@@ -52,3 +52,122 @@ import "./collection-log-tab/collection-log-tab.js";
 import "./collection-log-item/collection-log-item.js";
 import "./player-icon/player-icon.js";
 import "./donate-button/donate-button.js";
+
+/**
+ * Custom Panels Integration
+ * These are the custom panels built for the Group Iron Site project
+ * 
+ * Integration follows the 3-source data integration model:
+ * 1. RuneLite Plugin (group-ironmen-tracker)
+ * 2. Wise Old Man API
+ * 3. OSRS Wiki (via WikiService)
+ */
+
+// Import all custom panels
+import "./panels/group-panel-activities.js";
+import "./panels/group-panel-boss-strategy.js";
+import "./panels/group-panel-challenges.js";
+import "./panels/group-panel-dps-calculator.js";
+import "./panels/group-panel-group-milestones.js";
+import "./panels/group-panel-shared-calendar.js";
+import "./panels/group-panel-slayers.js";
+import "./panels/group-panel-valuable-drops.js";
+
+// Initialize all custom panels
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Initializing custom panels...');
+});
+
+// Add custom panel registration directly in index.js
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // Check if the router is available
+    if (typeof window.router !== 'undefined') {
+      // Register a route for the slayer tasks panel
+      const routeHandler = {
+        path: '/panel/slayer-tasks',
+        
+        enable() {
+          console.log('Enabling slayer tasks panel');
+          
+          // Find panels container
+          const panelsContainer = document.querySelector('.panels-container');
+          if (!panelsContainer) {
+            console.warn('No panels container found');
+            return;
+          }
+          
+          // Create panel if it doesn't exist
+          let panel = document.querySelector('slayer-tasks-panel');
+          if (!panel) {
+            panel = document.createElement('slayer-tasks-panel');
+            panelsContainer.appendChild(panel);
+          }
+          
+          // Show panel
+          panel.style.display = 'block';
+        },
+        
+        disable() {
+          console.log('Disabling slayer tasks panel');
+          
+          // Hide panel
+          const panel = document.querySelector('slayer-tasks-panel');
+          if (panel) {
+            panel.style.display = 'none';
+          }
+        }
+      };
+      
+      // Register route
+      window.router.register('/panel/slayer-tasks', routeHandler);
+      console.log('Registered slayer tasks panel route');
+      
+      // Add link to panels page when panels page is available
+      setTimeout(() => {
+        const panelsPage = document.querySelector('panels-page');
+        if (panelsPage) {
+          const panelsContent = panelsPage.querySelector('.panels-page-content');
+          if (panelsContent) {
+            // Find or create links container
+            let linksContainer = panelsContent.querySelector('.custom-panel-links');
+            if (!linksContainer) {
+              linksContainer = document.createElement('div');
+              linksContainer.className = 'panel-links custom-panel-links';
+              linksContainer.innerHTML = '<h3>Custom Panels</h3>';
+              panelsContent.appendChild(linksContainer);
+            }
+            
+            // Add link
+            const link = document.createElement('a');
+            link.className = 'panel-link';
+            link.href = '/panel/slayer-tasks';
+            link.innerHTML = `
+              <div class="panel-link-icon">🗡️</div>
+              <div class="panel-link-info">
+                <div class="panel-link-name">Slayer Tasks</div>
+                <div class="panel-link-description">Track slayer tasks for all group members</div>
+              </div>
+            `;
+            
+            linksContainer.appendChild(link);
+          }
+        }
+      }, 1000);
+    } else {
+      console.warn('Router not available for panel registration');
+    }
+  } catch (err) {
+    console.error('Error registering custom panels:', err);
+  }
+});
+
+// Log diagnostic info
+console.log('Custom components module loaded - waiting for DOM ready');
+
+// Create global accessor for debugging
+if (typeof window !== 'undefined') {
+  window.customPanels = {
+    getStatus: () => window.customElements.get('group-panel-activities') !== undefined
+  };
+}
