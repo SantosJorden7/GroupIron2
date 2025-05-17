@@ -12,69 +12,26 @@ RUN npm install --ignore-scripts
 # Copy all project files
 COPY . .
 
-# Create required directories and setup files
+# Create required directories
 RUN mkdir -p public
-RUN mkdir -p public/data
-RUN mkdir -p public/fonts
-RUN mkdir -p public/map
 
-# Create required data files for build
-RUN echo '[]' > public/data/map_icons.json
-RUN echo '[]' > public/data/map_labels.json
+# Run the debug script to check file structure
+RUN node debug.js
 
-# Create simplified stand-alone HTML for testing custom panels
-RUN echo '<!DOCTYPE html>' > public/index.html
-RUN echo '<html><head><title>Group Ironmen Custom Panels</title>' >> public/index.html
-RUN echo '<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />' >> public/index.html
-RUN echo '<style>' >> public/index.html
-RUN echo 'body { margin: 0; padding: 20px; font-family: sans-serif; background: #111; color: #eee; }' >> public/index.html
-RUN echo ':root { --orange: #ff981f; --background: #111111; --primary-text: #ffffff; --secondary-text: rgba(255,255,255,0.6); --border: #474747; }' >> public/index.html
-RUN echo '.panel-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }' >> public/index.html
-RUN echo '.panel-content { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px; padding: 16px; }' >> public/index.html
-RUN echo 'h1 { color: var(--orange); text-align: center; margin-bottom: 30px; }' >> public/index.html
-RUN echo '@font-face { font-family: "rsbold"; src: url("/fonts/RuneScape-Bold-12.woff2") format("woff2"); }' >> public/index.html
-RUN echo '@font-face { font-family: "rssmall"; src: url("/fonts/RuneScape-Plain-11.woff2") format("woff2"); }' >> public/index.html
-RUN echo '</style>' >> public/index.html
-RUN echo '</head><body>' >> public/index.html
-RUN echo '<h1>Group Ironmen Custom Panels</h1>' >> public/index.html
-RUN echo '<div class="panel-container">' >> public/index.html
-RUN echo '<group-panel-activities></group-panel-activities>' >> public/index.html
-RUN echo '<group-panel-slayers></group-panel-slayers>' >> public/index.html
-RUN echo '<group-panel-valuable-drops></group-panel-valuable-drops>' >> public/index.html
-RUN echo '<group-panel-challenges></group-panel-challenges>' >> public/index.html
-RUN echo '<group-panel-dps-calculator></group-panel-dps-calculator>' >> public/index.html
-RUN echo '<group-panel-boss-strategy></group-panel-boss-strategy>' >> public/index.html
-RUN echo '<group-panel-shared-calendar></group-panel-shared-calendar>' >> public/index.html
-RUN echo '<group-panel-group-milestones></group-panel-group-milestones>' >> public/index.html
-RUN echo '</div>' >> public/index.html
-RUN echo '<script type="module">' >> public/index.html
-RUN echo 'import "./panels/group-panel-activities.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-slayers.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-valuable-drops.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-challenges.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-dps-calculator.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-boss-strategy.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-shared-calendar.js";' >> public/index.html
-RUN echo 'import "./panels/group-panel-group-milestones.js";' >> public/index.html
-RUN echo '</script>' >> public/index.html
-RUN echo '</body></html>' >> public/index.html
+# Create a standalone demo page with working custom panel
+RUN mkdir -p public/standalone
+RUN echo '/* Basic BaseElement implementation */\nclass BaseElement extends HTMLElement {\n  constructor() { super(); }\n  connectedCallback() {}\n  disconnectedCallback() {}\n}\nexport { BaseElement };' > public/standalone/base-element.js
 
-# Create custom server script for direct panel testing
-RUN echo 'const express = require("express");' > scripts/custom-panel-server.js
-RUN echo 'const path = require("path");' >> scripts/custom-panel-server.js
-RUN echo 'const app = express();' >> scripts/custom-panel-server.js
-RUN echo 'const port = 4000;' >> scripts/custom-panel-server.js
-RUN echo 'app.use(express.static("public"));' >> scripts/custom-panel-server.js
-RUN echo 'app.use(express.static("src"));' >> scripts/custom-panel-server.js
-RUN echo 'app.get("*", (req, res) => {' >> scripts/custom-panel-server.js
-RUN echo '  res.sendFile(path.resolve("public", "index.html"));' >> scripts/custom-panel-server.js
-RUN echo '});' >> scripts/custom-panel-server.js
-RUN echo 'app.listen(port, () => {' >> scripts/custom-panel-server.js
-RUN echo '  console.log(`Group Ironmen custom panels server running at http://localhost:${port}`);' >> scripts/custom-panel-server.js
-RUN echo '});' >> scripts/custom-panel-server.js
+RUN echo '/* Basic pubsub implementation */\nconst pubsub = {\n  subscribers: {},\n  subscribe(event, callback) {\n    if (!this.subscribers[event]) {\n      this.subscribers[event] = [];\n    }\n    this.subscribers[event].push(callback);\n    return () => {\n      this.subscribers[event] = this.subscribers[event].filter(cb => cb !== callback);\n    };\n  },\n  publish(event, data) {\n    if (this.subscribers[event]) {\n      this.subscribers[event].forEach(callback => callback(data));\n    }\n  }\n};\nexport { pubsub };' > public/standalone/pubsub.js
 
-# Create a custom start script for the package.json
-RUN node -e "const pkg = require('./package.json'); pkg.scripts.customPanels = 'node scripts/custom-panel-server.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+# Create a basic activity panel
+RUN echo 'import { BaseElement } from "./base-element.js";\nimport { pubsub } from "./pubsub.js";\n\nclass ActivityPanel extends BaseElement {\n  constructor() {\n    super();\n    this.activities = [];\n  }\n\n  connectedCallback() {\n    this.render();\n  }\n\n  render() {\n    this.innerHTML = `\n      <div class="panel-content">\n        <h3>Group Activities</h3>\n        <div class="activities-container">\n          <div class="activity-item">\n            <span class="activity-player">Player1</span>\n            <span class="activity-text">Leveled Fishing to 75</span>\n            <span class="activity-time">1h ago</span>\n          </div>\n          <div class="activity-item">\n            <span class="activity-player">Player2</span>\n            <span class="activity-text">Received drop: Dragon Warhammer</span>\n            <span class="activity-time">3h ago</span>\n          </div>\n          <div class="activity-item">\n            <span class="activity-player">Player3</span>\n            <span class="activity-text">Completed quest: Dragon Slayer II</span>\n            <span class="activity-time">5h ago</span>\n          </div>\n        </div>\n      </div>\n    `;\n\n    // Add styles\n    const style = document.createElement("style");\n    style.textContent = `\n      .panel-content {\n        background: rgba(0,0,0,0.3);\n        border: 1px solid var(--border);\n        border-radius: 4px;\n        padding: 16px;\n      }\n      h3 {\n        margin-top: 0;\n        color: var(--orange);\n      }\n      .activity-item {\n        padding: 8px;\n        border-bottom: 1px solid var(--border);\n        display: flex;\n        justify-content: space-between;\n      }\n      .activity-player {\n        color: var(--orange);\n        font-weight: bold;\n      }\n      .activity-time {\n        opacity: 0.7;\n        font-size: 0.9em;\n      }\n    `;\n    this.appendChild(style);\n  }\n}\n\n// Register custom element\ncustomElements.define("activity-panel", ActivityPanel);' > public/standalone/activity-panel.js
 
-# Use the custom panels server for testing
-CMD ["npm", "run", "customPanels"]
+# Create the HTML page
+RUN echo '<!DOCTYPE html>\n<html>\n<head>\n  <title>Group Ironmen Demo Panel</title>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <style>\n    body {\n      background: #111;\n      color: #fff;\n      font-family: sans-serif;\n      padding: 20px;\n      --orange: #ff981f;\n      --background: #111111;\n      --primary-text: #ffffff;\n      --border: #474747;\n    }\n    h1 {\n      color: var(--orange);\n      text-align: center;\n    }\n  </style>\n</head>\n<body>\n  <h1>Group Ironmen Demo Panel</h1>\n  <activity-panel></activity-panel>\n  \n  <script type="module" src="./activity-panel.js"></script>\n</body>\n</html>' > public/standalone/index.html
+
+# Create a simple server script
+RUN echo 'const express = require("express");\nconst path = require("path");\nconst app = express();\nconst port = 4000;\n\napp.use(express.static("public"));\n\napp.get("/demo", (req, res) => {\n  res.sendFile(path.join(__dirname, "public", "standalone", "index.html"));\n});\n\napp.get("/", (req, res) => {\n  res.redirect("/demo");\n});\n\napp.listen(port, () => {\n  console.log(`Group Ironmen demo panel running at http://localhost:${port}`);\n});' > server.js
+
+# Start the server
+CMD ["node", "server.js"]
