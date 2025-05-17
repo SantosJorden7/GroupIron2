@@ -16,8 +16,15 @@ RUN apt-get install -y openssl ca-certificates
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/server ./
 COPY --from=builder /app/collection_log_info.json ./
-COPY ./docker-entrypoint.sh ./
-RUN chmod +x /app/docker-entrypoint.sh
+# Create config.toml and secret files directly in the Dockerfile
+RUN echo "[pg]" > config.toml \
+    && echo "user = \"\${PG_USER}\"" >> config.toml \
+    && echo "password = \"\${PG_PASSWORD}\"" >> config.toml \
+    && echo "host = \"\${PG_HOST}\"" >> config.toml \
+    && echo "port = \${PG_PORT}" >> config.toml \
+    && echo "dbname = \"\${PG_DB}\"" >> config.toml \
+    && echo "pool.max_size = 16" >> config.toml \
+    && echo "\${BACKEND_SECRET}" > secret
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# Run the server directly
 CMD ["/app/server"]
