@@ -12,29 +12,43 @@ RUN npm install --ignore-scripts
 # Copy all project files
 COPY . .
 
-# Create public directory if it doesn't exist
+# Create a custom standalone solution
 RUN mkdir -p public
 
-# Make sure we have basic files in public directory
-RUN cp src/index.html public/ || true
+# Create our own standalone index.html file
+RUN echo "<!DOCTYPE html>" > public/index.html && \
+    echo "<html><head><title>Group Ironmen - Custom Panels</title>" >> public/index.html && \
+    echo "<meta charset=\"UTF-8\" /><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />" >> public/index.html && \
+    echo "<style>" >> public/index.html && \
+    echo "body { font-family: sans-serif; background: #111; color: #eee; }" >> public/index.html && \
+    echo "body { --orange: #ff981f; --background: #111111; --primary-text: #ffffff; --border: #474747; }" >> public/index.html && \
+    echo ".panel-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }" >> public/index.html && \
+    echo ".header { background: var(--orange); color: black; padding: 10px 20px; text-align: center; margin-bottom: 20px; }" >> public/index.html && \
+    echo "</style></head><body>" >> public/index.html && \
+    echo "<div class=\"header\"><h1>Group Ironmen Custom Panels</h1></div>" >> public/index.html && \
+    echo "<div class=\"panel-container\">" >> public/index.html && \
+    echo "<group-panel-activities></group-panel-activities>" >> public/index.html && \
+    echo "<group-panel-slayers></group-panel-slayers>" >> public/index.html && \
+    echo "<group-panel-valuable-drops></group-panel-valuable-drops>" >> public/index.html && \
+    echo "<group-panel-challenges></group-panel-challenges>" >> public/index.html && \
+    echo "<group-panel-dps-calculator></group-panel-dps-calculator>" >> public/index.html && \
+    echo "<group-panel-boss-strategy></group-panel-boss-strategy>" >> public/index.html && \
+    echo "<group-panel-shared-calendar></group-panel-shared-calendar>" >> public/index.html && \
+    echo "<group-panel-group-milestones></group-panel-group-milestones>" >> public/index.html && \
+    echo "</div>" >> public/index.html && \
+    echo "<script src=\"/app.js\"></script>" >> public/index.html && \
+    echo "</body></html>" >> public/index.html
 
-# Create basic CSS and JS for initial loading
-RUN echo "body { font-family: sans-serif; }" > public/app.css
-RUN echo "console.log('Loading application...');" > public/app.js 
+# Build the JS bundle
+RUN node build.js
 
-# Run the complete bundle process with debug output
-RUN NODE_DEBUG=fs npm run bundle && ls -la public/
-
-# If index.html is still not generated, create a basic one
-RUN if [ ! -f public/index.html ]; then \
-    echo "Creating a basic index.html file since it wasn't generated properly"; \
-    cat src/index.html | \
-    sed 's/{{style}}/body { font-family: sans-serif; background: #222; color: #eee; }/g' | \
-    sed 's/{{js}}/console.log("Application loaded");/g' > public/index.html; \
+# Create a basic JS fallback if build fails
+RUN if [ ! -f public/app.js ]; then \
+    echo "console.log('Group Ironmen custom panels loading...');" > public/app.js; \
     fi
 
-# Verify the public directory contents
+# Verify files are created
 RUN ls -la public/
 
-# Simple entrypoint for serving
+# Use the standard server
 CMD ["npm", "run", "serve"]
