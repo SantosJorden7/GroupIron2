@@ -4,30 +4,40 @@
  * Follows the OSRS Group Ironmen codebase patterns
  */
 
-import { BaseElement } from "../base-element/base-element.js";
+import { BasePanel } from "../base-element/base-panel.js";
 import { pubsub } from "../data/pubsub.js";
+import { apiService } from "../data/api-service.js";
+import { dataSourceManager, DataSources } from "../data/data-source-manager.js";
+import { cacheManager } from "../data/cache-manager.js";
+import * as ui from "../utils/ui-helpers.js";
 
-class ActivitiesPanel extends BaseElement {
+class ActivitiesPanel extends BasePanel {
   constructor() {
     super();
     this.activities = [];
-    this.loading = true;
-    this.error = null;
-    this.lastUpdated = null;
     this.selectedFilter = "all";
-    this.dataSource = "plugin"; // Default data source
+    
+    // Initialize data source manager with available sources for this panel
+    this.dataSourceManager.initialize([
+      DataSources.PLUGIN, 
+      DataSources.WOM, 
+      DataSources.WIKI,
+      DataSources.MOCK
+    ]);
   }
 
   connectedCallback() {
     this.innerHTML = `
       <div class="panel-content activities-panel">
-        <div class="activities-container">
-          <div class="activities-header">
+        <div class="panel-header">🔔 Group Activities</div>
+        <div class="panel-inner">
+          <div class="panel-header-content">
             <h3>Group Activities</h3>
             <div class="data-source-indicator">
-              <span class="data-source plugin" title="Data from RuneLite Plugin">P</span>
-              <span class="data-source wom" title="Data from Wise Old Man API">W</span>
-              <span class="data-source wiki" title="Data from OSRS Wiki">K</span>
+              <span class="data-source plugin" title="${DataSources.PLUGIN.title}">P</span>
+              <span class="data-source wom" title="${DataSources.WOM.title}">W</span>
+              <span class="data-source wiki" title="${DataSources.WIKI.title}">K</span>
+              <span class="data-source mock" title="${DataSources.MOCK.title}">M</span>
               <span class="last-updated"></span>
             </div>
           </div>
@@ -41,21 +51,16 @@ class ActivitiesPanel extends BaseElement {
           </div>
           
           <div class="activities-list">
-            <!-- Activities will be rendered here -->
-            <div class="loading-container">
-              <div class="loading-text">Loading activities...</div>
-            </div>
+            ${ui.createLoadingContainer("Loading activities...")}
           </div>
           
-          <div class="error-container" style="display: none;">
-            <div class="error-text"></div>
-            <button class="retry-button">Retry</button>
-          </div>
+          ${ui.createErrorContainer()}
         </div>
       </div>
     `;
     
-    // Apply styles
+    // Apply base panel styles and custom styles
+    this.applyBasePanelStyles();
     this.applyStyles();
     
     // Subscribe to group data events using pubsub
@@ -71,12 +76,12 @@ class ActivitiesPanel extends BaseElement {
   }
 
   disconnectedCallback() {
-    // Cleanup subscription
+    // Clean up event listeners and subscriptions
     if (this.unsubscribe) {
       this.unsubscribe();
+      this.unsubscribe = null;
     }
     
-    // Remove event listeners
     this.removeEventListener("click", this.handleClick);
   }
 
@@ -137,6 +142,11 @@ class ActivitiesPanel extends BaseElement {
         color: white;
       }
       
+      .activities-panel .data-source.mock {
+        background-color: #8c8c8c;
+        color: white;
+      }
+      
       .activities-panel .last-updated {
         margin-left: 5px;
         font-size: 12px;
@@ -147,111 +157,52 @@ class ActivitiesPanel extends BaseElement {
       .activities-panel .filter-controls {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 15px;
+        gap: 8px;
+        margin-bottom: 16px;
       }
       
       .activities-panel .filter-button {
-        background-color: var(--button-bg);
-        border: 1px solid var(--button-border);
-        color: var(--button-text);
-        padding: 4px 10px;
-        font-family: rssmall, 'RuneScape Small', sans-serif;
         font-size: 12px;
+        padding: 6px 12px;
+        background-color: var(--item-bg);
+        border: 1px solid var(--border);
+        color: var(--primary-text);
+        border-radius: 4px;
         cursor: pointer;
-        border-radius: 2px;
-      }
-      
-      .activities-panel .filter-button:hover {
-        background-color: var(--button-hover-bg);
       }
       
       .activities-panel .filter-button.active {
         background-color: var(--orange);
-        border-color: #a45e00;
-        color: #000;
+        color: black;
+        font-weight: bold;
       }
       
-      /* Loading state */
-      .activities-panel .loading-container {
-        padding: 15px;
-        text-align: center;
-      }
-      
-      .activities-panel .loading-text {
-        position: relative;
-        padding-left: 24px;
-      }
-      
-      .activities-panel .loading-text::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 50%;
-        margin-top: -8px;
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--orange);
-        border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 1s linear infinite;
-      }
-      
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-      
-      /* Error state */
-      .activities-panel .error-container {
-        background-color: rgba(168, 58, 58, 0.1);
-        border: 1px solid rgba(168, 58, 58, 0.3);
-        padding: 12px;
-        margin: 10px 0;
-        text-align: center;
-        border-radius: 3px;
-      }
-      
-      .activities-panel .error-text {
-        color: #a83a3a;
-        margin-bottom: 8px;
-      }
-      
-      .activities-panel .retry-button {
-        background-color: var(--button-bg);
-        border: 1px solid var(--button-border);
-        color: var(--button-text);
-        padding: 3px 10px;
-        font-family: rssmall, 'RuneScape Small', sans-serif;
-        cursor: pointer;
-      }
-      
-      /* Activity items */
+      /* Activity list */
       .activities-panel .activities-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        margin-bottom: 16px;
       }
       
       .activities-panel .activity-item {
         display: flex;
-        background-color: rgba(0, 0, 0, 0.15);
-        border: 1px solid var(--border-color);
-        border-radius: 2px;
-        overflow: hidden;
-        padding: 10px;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 8px;
+        background-color: var(--item-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
       }
       
       .activities-panel .activity-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 30px;
-        height: 30px;
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 50%;
-        margin-right: 10px;
+        min-width: 32px;
+        height: 32px;
+        background-color: var(--item-highlight);
+        border-radius: 4px;
         font-size: 16px;
       }
       
@@ -262,210 +213,397 @@ class ActivitiesPanel extends BaseElement {
       .activities-panel .activity-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
         margin-bottom: 4px;
       }
       
       .activities-panel .activity-member {
-        font-family: rsbold, 'RuneScape Bold', sans-serif;
+        font-weight: bold;
         color: var(--orange);
       }
       
       .activities-panel .activity-time {
-        font-size: 11px;
-        opacity: 0.7;
+        font-size: 12px;
+        color: var(--secondary-text);
       }
       
       .activities-panel .activity-description {
-        font-size: 13px;
-      }
-      
-      /* Activity type styling */
-      .activities-panel .activity-item[data-type="level-up"] .activity-icon {
-        background-color: #4a934a;
-      }
-      
-      .activities-panel .activity-item[data-type="drop"] .activity-icon {
-        background-color: #9b7d27;
-      }
-      
-      .activities-panel .activity-item[data-type="quest"] .activity-icon {
-        background-color: #3a67a8;
-      }
-      
-      .activities-panel .activity-item[data-type="boss"] .activity-icon {
-        background-color: #a83a3a;
+        font-size: 14px;
+        color: var(--primary-text);
       }
       
       /* Empty state */
       .activities-panel .empty-state {
-        padding: 20px;
+        padding: 16px;
         text-align: center;
         color: var(--secondary-text);
+        background-color: var(--item-bg);
+        border-radius: 4px;
       }
     `;
     this.appendChild(style);
   }
 
   handleClick(event) {
-    // Handle filter buttons
-    if (event.target.classList.contains("filter-button")) {
-      const filter = event.target.dataset.filter;
+    // Handle filter button clicks
+    if (event.target.closest('.filter-button')) {
+      const filterButton = event.target.closest('.filter-button');
+      const filter = filterButton.dataset.filter;
+      
       this.filterActivities(filter);
     }
+  }
+
+  async loadActivities() {
+    this.showLoading();
     
-    // Handle retry button
-    if (event.target.classList.contains("retry-button")) {
-      this.loadActivities();
+    try {
+      // Try to load from plugin first (highest priority)
+      const fromPlugin = await this.tryPluginActivities();
+      if (fromPlugin) return;
+      
+      // Try Wise Old Man API next
+      const fromWom = await this.tryWiseOldManActivities();
+      if (fromWom) return;
+      
+      // Try Wiki data next
+      const fromWiki = await this.tryWikiActivities();
+      if (fromWiki) return;
+      
+      // Final fallback - use mock data
+      const mockSuccess = await this.useMockData();
+      if (!mockSuccess) {
+        this.showError("Failed to load activities from any source");
+      }
+    } catch (error) {
+      console.error('Error loading activities:', error);
+      this.showError('Failed to load activities: ' + error.message);
+    }
+  }
+  
+  async tryPluginActivities() {
+    try {
+      // Show loading state while fetching data
+      this.showLoading("Loading activities from plugin data...");
+      
+      // Check if we can get data directly from the plugin via apiService
+      if (!apiService || !apiService.getGroupData) return false;
+      
+      // Fetch the latest group data
+      const groupName = pubsub.getState('currentGroup');
+      if (!groupName) return false;
+      
+      console.log(`Fetching group data for ${groupName} from plugin...`);
+      
+      // Fetch both skill data and collection log in parallel
+      const [skillData, collectionLog] = await Promise.all([
+        apiService.getSkillData(groupName),
+        apiService.getCollectionLog(groupName)
+      ]);
+      
+      if (!skillData && !collectionLog) {
+        console.warn("No data available from plugin");
+        return false;
+      }
+      
+      // Process activities from skill data
+      const activities = [];
+      
+      // Process skill data (level ups, milestones, etc)
+      if (skillData) {
+        Object.entries(skillData).forEach(([memberName, memberSkills]) => {
+          // Check for significant level milestones (multiples of 10 or 99)
+          Object.entries(memberSkills).forEach(([skillName, skillInfo]) => {
+            if (skillInfo.level && (skillInfo.level % 10 === 0 || skillInfo.level === 99)) {
+              activities.push({
+                id: `skill_${memberName}_${skillName}_${skillInfo.level}_${Date.now()}`,
+                type: "level-up",
+                member: memberName,
+                timestamp: skillInfo.timestamp || new Date().toISOString(),
+                description: `Reached level ${skillInfo.level} in ${skillName.charAt(0).toUpperCase() + skillName.slice(1)}`,
+                icon: this.getSkillIcon(skillName),
+                skillName: skillName,
+                level: skillInfo.level
+              });
+            }
+          });
+        });
+      }
+      
+      // Process collection log data (boss kills, valuable drops)
+      if (collectionLog) {
+        // Extract valuable drops (similar to valuable-drops panel)
+        const valuableThreshold = 500000; // 500k gp minimum for activity feed
+        
+        Object.entries(collectionLog).forEach(([memberName, memberLogs]) => {
+          memberLogs.forEach(logEntry => {
+            // Add boss kills as activities
+            if (logEntry.category && logEntry.category.toLowerCase().includes('boss')) {
+              activities.push({
+                id: `boss_${memberName}_${logEntry.category}_${Date.now()}`,
+                type: "boss",
+                member: memberName,
+                timestamp: logEntry.timestamp || new Date().toISOString(),
+                description: `Defeated ${logEntry.category}`,
+                icon: "👹"
+              });
+            }
+            
+            // Add valuable drops as activities
+            if (logEntry.items && Array.isArray(logEntry.items)) {
+              logEntry.items.forEach(item => {
+                if (item.value && item.value >= valuableThreshold) {
+                  activities.push({
+                    id: `drop_${memberName}_${item.id}_${Date.now()}`,
+                    type: "drop",
+                    member: memberName,
+                    timestamp: item.timestamp || new Date().toISOString(),
+                    description: `Received ${item.name} drop worth ${this.formatNumber(item.value)} gp`,
+                    icon: "💰",
+                    itemId: item.id,
+                    value: item.value
+                  });
+                }
+              });
+            }
+          });
+        });
+      }
+      
+      // Sort all activities by timestamp (newest first)
+      this.activities = activities.sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp);
+      });
+      
+      this.setDataSource(DataSources.PLUGIN.id);
+      this.hideLoading();
+      this.updateDisplay();
+      return true;
+    } catch (error) {
+      console.warn("Failed to load activities from plugin:", error);
+      return false;
     }
   }
 
-  loadActivities() {
-    this.loading = true;
-    this.updateDisplay();
-    
-    // Try to get data from plugin first (P)
-    if (window.plugin && window.plugin.groupActivities) {
-      try {
-        // Plugin data available
-        this.activities = window.plugin.groupActivities.getActivities() || [];
-        this.dataSource = "plugin";
-        this.loading = false;
-        this.error = null;
-        this.lastUpdated = new Date();
+  async tryWiseOldManActivities() {
+    try {
+      this.showLoading("Loading activities from Wise Old Man...");
+      
+      const groupName = pubsub.getState('currentGroup');
+      if (!groupName) return false;
+      
+      const groupId = await this.getWomGroupId(groupName);
+      if (!groupId) return false;
+      
+      // Use the cached data if available
+      const cachedActivities = cacheManager.getCachedData(`wom-activities-${groupId}`);
+      if (cachedActivities) {
+        console.log("Using cached WOM activities");
+        this.activities = cachedActivities;
+        this.setDataSource(DataSources.WOM.id);
+        this.hideLoading();
         this.updateDisplay();
-        return;
-      } catch (err) {
-        console.warn("Failed to load activities from plugin:", err);
-        // Continue to fallback
+        return true;
       }
+      
+      // Fetch data from Wise Old Man API
+      const endpoint = `https://api.wiseoldman.net/v2/groups/${groupId}/activities`;
+      const response = await fetch(endpoint);
+      
+      if (!response.ok) {
+        console.warn(`Failed to fetch activities from WOM API: ${response.status}`);
+        return false;
+      }
+      
+      const data = await response.json();
+      
+      if (!data || !Array.isArray(data)) {
+        console.warn("Invalid data format from WOM API");
+        return false;
+      }
+      
+      // Process WOM activities into our format
+      const activities = data.map(activity => {
+        // Extract player name
+        const memberName = activity.player.displayName;
+        // Set activity type based on WOM activity type
+        let type = "level-up"; // Default type
+        
+        if (activity.type.includes("boss")) {
+          type = "boss";
+        } else if (activity.type.includes("item")) {
+          type = "drop";
+        } else if (activity.type.includes("quest")) {
+          type = "quest";
+        }
+        
+        // Create activity object
+        return {
+          id: `wom_${activity.id}`,
+          type: type,
+          member: memberName,
+          timestamp: activity.createdAt,
+          description: activity.message,
+          icon: this.getActivityIcon(activity.type)
+        };
+      });
+      
+      // Cache the results
+      cacheManager.cacheData(`wom-activities-${groupId}`, activities, 15 * 60 * 1000); // 15 minutes
+      
+      // Update panel data
+      this.activities = activities;
+      this.setDataSource(DataSources.WOM.id);
+      this.hideLoading();
+      this.updateDisplay();
+      
+      return true;
+    } catch (error) {
+      console.warn("Failed to load activities from WOM:", error);
+      return false;
     }
+  }
+  
+  async getWomGroupId(groupName) {
+    try {
+      // Check cache first
+      const cachedId = cacheManager.getCachedData(`wom-group-id-${groupName}`);
+      if (cachedId) return cachedId;
+      
+      // Search for the group
+      const response = await fetch(`https://api.wiseoldman.net/v2/groups?name=${encodeURIComponent(groupName)}`);
+      if (!response.ok) return null;
+      
+      const groups = await response.json();
+      
+      if (!groups || !Array.isArray(groups) || groups.length === 0) {
+        console.warn(`No WOM group found with name: ${groupName}`);
+        return null;
+      }
+      
+      // Find exact match (case insensitive)
+      const match = groups.find(g => g.name.toLowerCase() === groupName.toLowerCase());
+      if (!match) return null;
+      
+      // Cache the group id
+      cacheManager.cacheData(`wom-group-id-${groupName}`, match.id, 24 * 60 * 60 * 1000); // 24 hours
+      
+      return match.id;
+    } catch (error) {
+      console.warn("Error getting WOM group ID:", error);
+      return null;
+    }
+  }
+  
+  getActivityIcon(activityType) {
+    // Map WOM activity types to icons
+    if (activityType.includes("boss")) return "👹";
+    if (activityType.includes("item")) return "💰";
+    if (activityType.includes("quest")) return "📜";
+    if (activityType.includes("level")) return "🎮";
     
-    // Fallback to Wise Old Man API (W)
-    this.tryWiseOldManActivities();
+    // Default icon
+    return "🔔";
   }
 
-  tryWiseOldManActivities() {
-    // Check if WOM service is available
-    if (window.wiseOldManService) {
-      try {
-        window.wiseOldManService.getGroupActivities()
-          .then(womActivities => {
-            if (womActivities && womActivities.length > 0) {
-              this.activities = womActivities;
-              this.dataSource = "wiseOldMan";
-              this.loading = false;
-              this.error = null;
-              this.lastUpdated = new Date();
-              this.updateDisplay();
-            } else {
-              // Try the OSRS Wiki as last resort (K)
-              this.tryWikiActivities();
-            }
-          })
-          .catch(err => {
-            console.warn("Failed to load activities from Wise Old Man:", err);
-            this.tryWikiActivities();
-          });
-      } catch (err) {
-        this.tryWikiActivities();
+  async tryWikiActivities() {
+    try {
+      this.showLoading("Looking up OSRS Wiki data...");
+      
+      // In a real implementation, this would fetch data from the OSRS Wiki API
+      // For this example, we'll use cached data or return false
+      
+      const cachedActivities = cacheManager.getCachedData('wiki-activities');
+      if (cachedActivities) {
+        console.log("Using cached wiki activities");
+        this.activities = cachedActivities;
+        this.setDataSource(DataSources.WIKI.id);
+        this.hideLoading();
+        this.updateDisplay();
+        return true;
       }
-    } else {
-      // No WOM service, try Wiki
-      this.tryWikiActivities();
+      
+      // If we got here, we don't have cached data and can't get it from the wiki
+      return false;
+    } catch (error) {
+      console.warn("Failed to load activities from Wiki:", error);
+      return false;
     }
   }
 
-  tryWikiActivities() {
-    // Check if Wiki service is available
-    if (window.wikiService) {
-      try {
-        window.wikiService.getRecentActivities()
-          .then(wikiActivities => {
-            if (wikiActivities && wikiActivities.length > 0) {
-              this.activities = wikiActivities;
-              this.dataSource = "wiki";
-              this.loading = false;
-              this.error = null;
-              this.lastUpdated = new Date();
-              this.updateDisplay();
-            } else {
-              // No data from any source, use mock data
-              this.useMockData();
-            }
-          })
-          .catch(err => {
-            console.warn("Failed to load activities from Wiki:", err);
-            this.useMockData();
-          });
-      } catch (err) {
-        this.useMockData();
-      }
-    } else {
-      // No Wiki service, use mock data
-      this.useMockData();
-    }
-  }
-
-  useMockData() {
-    // Simulate loading data from the server
-    setTimeout(() => {
-      try {
-        // Mock data - in a real implementation this would use the API
-        this.activities = [
+  async useMockData() {
+    try {
+      this.showLoading("Loading sample activities...");
+      
+      // Get cached mock data or create new mock data
+      const mockActivities = cacheManager.getCachedData('mock-activities') || (() => {
+        const now = new Date();
+        
+        // Sample mock activities for demonstration purposes
+        return [
           {
-            id: "1",
+            id: "activity1",
             type: "level-up",
             member: "Player1",
-            description: "Reached level 80 in Slayer",
-            timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-            icon: "🎮"
+            timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+            description: "Reached level 90 in Cooking",
+            icon: "🍳"
           },
           {
-            id: "2",
-            type: "drop",
+            id: "activity2",
+            type: "boss",
             member: "Player2",
-            description: "Obtained Abyssal whip from Abyssal demons",
-            timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(), // 2 hours ago
-            icon: "💎"
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+            description: "Defeated Zulrah",
+            icon: "👹"
           },
           {
-            id: "3",
+            id: "activity3",
             type: "quest",
             member: "Player3",
-            description: "Completed Dragon Slayer II",
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+            description: "Completed Dragon Slayer II",
             icon: "📜"
           },
           {
-            id: "4",
-            type: "level-up",
+            id: "activity4",
+            type: "drop",
             member: "Player1",
-            description: "Reached level 70 in Prayer",
             timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(), // 12 hours ago
-            icon: "🎮"
+            description: "Received Abyssal whip drop from Abyssal demons",
+            icon: "💰"
           },
           {
-            id: "5",
-            type: "boss",
+            id: "activity5",
+            type: "level-up",
             member: "Player2",
-            description: "Defeated Vorkath (75 KC)",
-            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-            icon: "👑"
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 24 hours ago
+            description: "Reached level 80 in Construction",
+            icon: "🏠"
+          },
+          {
+            id: "activity6",
+            type: "drop",
+            member: "Player3",
+            timestamp: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(), // 1.5 days ago
+            description: "Received Twisted Bow drop from Chambers of Xeric",
+            icon: "🏹"
           }
         ];
-        
-        this.dataSource = "wiki"; // Show as Wiki source since it's our fallback
-        this.loading = false;
-        this.error = null;
-        this.lastUpdated = new Date();
-      } catch (error) {
-        this.loading = false;
-        this.error = error.message || "Failed to load activities";
-      }
+      })();
       
+      // Cache the mock data
+      cacheManager.cacheData('mock-activities', mockActivities, 24 * 60 * 60 * 1000); // 24 hours
+      
+      this.activities = mockActivities;
+      this.setDataSource(DataSources.MOCK.id);
+      this.hideLoading();
       this.updateDisplay();
-    }, 1000);
+      return true;
+    } catch (error) {
+      console.warn("Failed to create mock data:", error);
+      this.showError("Failed to load activities. Please try again.");
+      return false;
+    }
   }
 
   filterActivities(filter) {
@@ -486,50 +624,8 @@ class ActivitiesPanel extends BaseElement {
   }
 
   updateDisplay() {
-    // Update data source badges
-    const pluginBadge = this.querySelector(".data-source.plugin");
-    const womBadge = this.querySelector(".data-source.wom");
-    const wikiBadge = this.querySelector(".data-source.wiki");
-    
-    if (pluginBadge) {
-      pluginBadge.style.opacity = this.dataSource === "plugin" ? "1" : "0.3";
-    }
-    
-    if (womBadge) {
-      womBadge.style.opacity = this.dataSource === "wiseOldMan" ? "1" : "0.3";
-    }
-    
-    if (wikiBadge) {
-      wikiBadge.style.opacity = this.dataSource === "wiki" ? "1" : "0.3";
-    }
-    
-    // Update data source and last updated
-    const lastUpdatedElem = this.querySelector(".last-updated");
-    if (lastUpdatedElem) {
-      lastUpdatedElem.textContent = this.lastUpdated 
-        ? `Last updated: ${this.lastUpdated.toLocaleTimeString()}`
-        : "Not yet updated";
-    }
-    
-    // Show/hide loading
-    const loadingElem = this.querySelector(".loading-container");
-    if (loadingElem) {
-      loadingElem.style.display = this.loading ? "block" : "none";
-    }
-    
-    // Show error if any
-    const errorElem = this.querySelector(".error-container");
-    if (errorElem) {
-      if (this.error) {
-        errorElem.style.display = "block";
-        const errorTextElem = errorElem.querySelector(".error-text");
-        if (errorTextElem) {
-          errorTextElem.textContent = this.error;
-        }
-      } else {
-        errorElem.style.display = "none";
-      }
-    }
+    // Update data source indicators using base panel method
+    this.updateDataSourceIndicators();
     
     // Update activities list
     const activitiesListElem = this.querySelector(".activities-list");
@@ -604,7 +700,43 @@ class ActivitiesPanel extends BaseElement {
     
     return "Just now";
   }
+  
+  // Helper to get appropriate icon for each skill
+  getSkillIcon(skillName) {
+    const skillIcons = {
+      attack: "⚔️",
+      strength: "💪",
+      defense: "🛡️",
+      hitpoints: "❤️",
+      ranged: "🏹",
+      prayer: "✝️",
+      magic: "🧙",
+      cooking: "🍳",
+      woodcutting: "🪓",
+      fletching: "🏹",
+      fishing: "🎣",
+      firemaking: "🔥",
+      crafting: "✂️",
+      smithing: "⚒️",
+      mining: "⛏️",
+      herblore: "🧪",
+      agility: "🏃",
+      thieving: "🦝",
+      slayer: "👹",
+      farming: "🌱",
+      runecraft: "🧙‍♂️",
+      hunter: "🏹",
+      construction: "🏠"
+    };
+    
+    return skillIcons[skillName.toLowerCase()] || "🎮";
+  }
+  
+  // Helper to format numbers with commas
+  formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 }
 
-// Register with the correct group-panel-xyz naming convention
+// Register with the correct naming convention
 window.customElements.define('group-panel-activities', ActivitiesPanel);
