@@ -15,8 +15,20 @@ COPY . .
 # Make sure the scripts directory is executable
 RUN chmod +x ./scripts/*.sh
 
+# Inspect content of src directory
+RUN ls -la src/
+
+# Clean the public directory
+RUN rm -rf public/* || true 
+
+# Create the public directory if it doesn't exist
+RUN mkdir -p public
+
 # Build the application (run the bundle script which includes cleaning and building)
 RUN npm run bundle
+
+# Copy index.html to public directory if it doesn't exist
+RUN if [ ! -f public/index.html ]; then cp src/index.html public/index.html; fi
 
 # Verify index.html was created
 RUN ls -la public/

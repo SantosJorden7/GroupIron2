@@ -16,15 +16,18 @@ RUN apt-get install -y openssl ca-certificates
 RUN rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/target/release/server ./
 COPY --from=builder /app/collection_log_info.json ./
-# Create config.toml and secret files directly in the Dockerfile
-RUN echo "[pg]" > config.toml \
-    && echo "user = \"\${PG_USER}\"" >> config.toml \
-    && echo "password = \"\${PG_PASSWORD}\"" >> config.toml \
-    && echo "host = \"\${PG_HOST}\"" >> config.toml \
-    && echo "port = \${PG_PORT}" >> config.toml \
-    && echo "dbname = \"\${PG_DB}\"" >> config.toml \
-    && echo "pool.max_size = 16" >> config.toml \
-    && echo "\${BACKEND_SECRET}" > secret
+# Create an entrypoint shell script instead of trying to use environment variables directly
+RUN echo '#!/bin/sh' > entrypoint.sh \
+    && echo 'echo "[pg]" > config.toml' >> entrypoint.sh \
+    && echo 'echo "user = \"$PG_USER\"" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "password = \"$PG_PASSWORD\"" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "host = \"$PG_HOST\"" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "port = $PG_PORT" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "dbname = \"$PG_DB\"" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "pool.max_size = 16" >> config.toml' >> entrypoint.sh \
+    && echo 'echo "$BACKEND_SECRET" > secret' >> entrypoint.sh \
+    && echo 'exec "/app/server"' >> entrypoint.sh \
+    && chmod +x entrypoint.sh
 
-# Run the server directly
-CMD ["/app/server"]
+# Use the entrypoint script
+CMD ["/app/entrypoint.sh"]
