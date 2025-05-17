@@ -12,8 +12,14 @@ RUN npm install --ignore-scripts
 # Copy all project files
 COPY . .
 
-# Build the application
-RUN node build.js --prod
+# Make sure the scripts directory is executable
+RUN chmod +x ./scripts/*.sh
+
+# Build the application (run the bundle script which includes cleaning and building)
+RUN npm run bundle
+
+# Verify index.html was created
+RUN ls -la public/
 
 # Run the application
 ENTRYPOINT ["/bin/sh", "-c"]
