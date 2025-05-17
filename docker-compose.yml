@@ -5,7 +5,7 @@ services:
       context: ./site
       dockerfile: Dockerfile.custom
     environment:
-      - HOST_URL=${HOST_URL}
+      - HOST_URL=${HOST_URL:-http://localhost:5000}
     restart: always
     container_name: group-ironmen-tracker-frontend
     ports:
@@ -14,32 +14,48 @@ services:
     # volumes:
     #   - ./site:/app
     #   - /app/node_modules
+    depends_on:
+      - group-ironmen-tracker-backend
+
   group-ironmen-tracker-backend:
     build:
       context: ./server
       dockerfile: Dockerfile
     # image: chrisleeeee/group-ironmen-tracker-backend
     environment:
-      - PG_USER=${PG_USER}
-      - PG_PASSWORD=${PG_PASSWORD}
-      - PG_HOST=${PG_HOST}
-      - PG_PORT=${PG_PORT}
-      - PG_DB=${PG_DB}
-      - BACKEND_SECRET=${BACKEND_SECRET}
+      - PG_USER=${PG_USER:-postgres}
+      - PG_PASSWORD=${PG_PASSWORD:-postgres}
+      - PG_HOST=${PG_HOST:-postgres}
+      - PG_PORT=${PG_PORT:-5432}
+      - PG_DB=${PG_DB:-ironmen}
+      - BACKEND_SECRET=${BACKEND_SECRET:-verysecret}
     restart: always
     depends_on:
-      - "postgres"
+      postgres:
+        condition: service_healthy
     container_name: group-ironmen-tracker-backend
     ports:
       - 5000:8080  # replace this if using a docker-compatible reverse proxy like traefik
+
   postgres:
-    image: postgres
+    image: postgres:17-alpine
     restart: always
     container_name: group-ironmen-tracker-postgres
     environment:
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PASSWORD}
-      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-postgres}
+      POSTGRES_DB: ${PG_DB:-ironmen}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./server/src/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql # initialize database schema
+
+volumes:
+  postgres-data:
     volumes:
       - ./pg-data:/var/lib/postgresql/data # change the left-hand side of : to the path you prefer the DB to store the data in
       - ./server/src/sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql # change the left-hand side of the : to the path that contains the schema.sql

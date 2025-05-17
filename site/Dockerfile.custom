@@ -14,24 +14,483 @@ COPY . .
 
 # Create required directories
 RUN mkdir -p public
+RUN mkdir -p public/data
+RUN mkdir -p public/fonts
+RUN mkdir -p public/css
 
-# Run the debug script to check file structure
-RUN node debug.js
+# Generate CSS for the panels
+RUN echo '/* Custom Panels CSS */
+:root {
+  --orange: #ff981f;
+  --orange-transparent: rgba(255, 152, 31, 0.05);
+  --yellow: #ffff00;
+  --background: #111111;
+  --primary-text: #ffffff;
+  --secondary-text: rgba(255, 255, 255, 0.6);
+  --border: #474747;
+}
 
-# Create a standalone demo page with working custom panel
-RUN mkdir -p public/standalone
-RUN echo '/* Basic BaseElement implementation */\nclass BaseElement extends HTMLElement {\n  constructor() { super(); }\n  connectedCallback() {}\n  disconnectedCallback() {}\n}\nexport { BaseElement };' > public/standalone/base-element.js
+body {
+  font-family: sans-serif;
+  background: var(--background);
+  color: var(--primary-text);
+  margin: 0;
+  padding: 20px;
+}
 
-RUN echo '/* Basic pubsub implementation */\nconst pubsub = {\n  subscribers: {},\n  subscribe(event, callback) {\n    if (!this.subscribers[event]) {\n      this.subscribers[event] = [];\n    }\n    this.subscribers[event].push(callback);\n    return () => {\n      this.subscribers[event] = this.subscribers[event].filter(cb => cb !== callback);\n    };\n  },\n  publish(event, data) {\n    if (this.subscribers[event]) {\n      this.subscribers[event].forEach(callback => callback(data));\n    }\n  }\n};\nexport { pubsub };' > public/standalone/pubsub.js
+.panel-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
+}
 
-# Create a basic activity panel
-RUN echo 'import { BaseElement } from "./base-element.js";\nimport { pubsub } from "./pubsub.js";\n\nclass ActivityPanel extends BaseElement {\n  constructor() {\n    super();\n    this.activities = [];\n  }\n\n  connectedCallback() {\n    this.render();\n  }\n\n  render() {\n    this.innerHTML = `\n      <div class="panel-content">\n        <h3>Group Activities</h3>\n        <div class="activities-container">\n          <div class="activity-item">\n            <span class="activity-player">Player1</span>\n            <span class="activity-text">Leveled Fishing to 75</span>\n            <span class="activity-time">1h ago</span>\n          </div>\n          <div class="activity-item">\n            <span class="activity-player">Player2</span>\n            <span class="activity-text">Received drop: Dragon Warhammer</span>\n            <span class="activity-time">3h ago</span>\n          </div>\n          <div class="activity-item">\n            <span class="activity-player">Player3</span>\n            <span class="activity-text">Completed quest: Dragon Slayer II</span>\n            <span class="activity-time">5h ago</span>\n          </div>\n        </div>\n      </div>\n    `;\n\n    // Add styles\n    const style = document.createElement("style");\n    style.textContent = `\n      .panel-content {\n        background: rgba(0,0,0,0.3);\n        border: 1px solid var(--border);\n        border-radius: 4px;\n        padding: 16px;\n      }\n      h3 {\n        margin-top: 0;\n        color: var(--orange);\n      }\n      .activity-item {\n        padding: 8px;\n        border-bottom: 1px solid var(--border);\n        display: flex;\n        justify-content: space-between;\n      }\n      .activity-player {\n        color: var(--orange);\n        font-weight: bold;\n      }\n      .activity-time {\n        opacity: 0.7;\n        font-size: 0.9em;\n      }\n    `;\n    this.appendChild(style);\n  }\n}\n\n// Register custom element\ncustomElements.define("activity-panel", ActivityPanel);' > public/standalone/activity-panel.js
+.panel-content {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
 
-# Create the HTML page
-RUN echo '<!DOCTYPE html>\n<html>\n<head>\n  <title>Group Ironmen Demo Panel</title>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <style>\n    body {\n      background: #111;\n      color: #fff;\n      font-family: sans-serif;\n      padding: 20px;\n      --orange: #ff981f;\n      --background: #111111;\n      --primary-text: #ffffff;\n      --border: #474747;\n    }\n    h1 {\n      color: var(--orange);\n      text-align: center;\n    }\n  </style>\n</head>\n<body>\n  <h1>Group Ironmen Demo Panel</h1>\n  <activity-panel></activity-panel>\n  \n  <script type="module" src="./activity-panel.js"></script>\n</body>\n</html>' > public/standalone/index.html
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
 
-# Create a simple server script
-RUN echo 'const express = require("express");\nconst path = require("path");\nconst app = express();\nconst port = 4000;\n\napp.use(express.static("public"));\n\napp.get("/demo", (req, res) => {\n  res.sendFile(path.join(__dirname, "public", "standalone", "index.html"));\n});\n\napp.get("/", (req, res) => {\n  res.redirect("/demo");\n});\n\napp.listen(port, () => {\n  console.log(`Group Ironmen demo panel running at http://localhost:${port}`);\n});' > server.js
+.panel-title {
+  color: var(--orange);
+  font-family: "rsbold", sans-serif;
+  margin: 0;
+}
+
+.data-source-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.source-badge.plugin {
+  background-color: #4a934a;
+}
+
+.source-badge.wom {
+  background-color: #3a67a8;
+}
+
+.source-badge.wiki {
+  background-color: #a83a3a;
+}
+
+/* Font faces */
+@font-face {
+  font-family: "rsbold";
+  src: url("/fonts/RuneScape-Bold-12.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "rssmall";
+  src: url("/fonts/RuneScape-Plain-11.woff2") format("woff2");
+}
+' > public/css/panels.css
+
+# Create BaseElement and pubsub utility
+RUN mkdir -p public/js/utils
+RUN echo 'class BaseElement extends HTMLElement {
+  constructor() {
+    super();
+    this.eventUnbinders = [];
+  }
+
+  connectedCallback() {}
+
+  disconnectedCallback() {
+    // Clean up any event listeners
+    this.eventUnbinders.forEach(unbind => unbind());
+    this.eventUnbinders = [];
+  }
+
+  // Helper to add event listeners that will be cleaned up
+  addEvent(element, event, callback) {
+    element.addEventListener(event, callback);
+    this.eventUnbinders.push(() => {
+      element.removeEventListener(event, callback);
+    });
+  }
+}
+
+export { BaseElement };' > public/js/utils/base-element.js
+
+RUN echo 'const pubsub = {
+  subscribers: {},
+  subscribe(event, callback) {
+    if (!this.subscribers[event]) {
+      this.subscribers[event] = [];
+    }
+    this.subscribers[event].push(callback);
+    return () => {
+      this.subscribers[event] = this.subscribers[event].filter(cb => cb !== callback);
+    };
+  },
+  publish(event, data) {
+    if (this.subscribers[event]) {
+      this.subscribers[event].forEach(callback => callback(data));
+    }
+  }
+};
+
+export { pubsub };' > public/js/utils/pubsub.js
+
+# Create all panel components
+RUN mkdir -p public/js/panels
+
+# Activities Panel
+RUN echo 'import { BaseElement } from "../utils/base-element.js";
+import { pubsub } from "../utils/pubsub.js";
+
+class GroupPanelActivities extends BaseElement {
+  constructor() {
+    super();
+    this.activities = [];
+    this.loading = true;
+    this.error = null;
+    this.dataSource = "plugin";
+  }
+
+  connectedCallback() {
+    this.render();
+    this.loadActivities();
+    
+    // Subscribe to data updates
+    const unsubscribe = pubsub.subscribe("data-updated", () => this.loadActivities());
+    this.eventUnbinders.push(unsubscribe);
+  }
+  
+  async loadActivities() {
+    this.loading = true;
+    this.render();
+    
+    try {
+      const response = await fetch("http://localhost:5000/api/activities");
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      this.activities = data;
+      this.dataSource = "plugin";
+      this.loading = false;
+      this.error = null;
+    } catch (err) {
+      console.error("Error loading activities:", err);
+      this.error = err.message;
+      this.loading = false;
+      this.dataSource = "mock"; // Fallback to mock data
+      
+      // Mock data for fallback
+      this.activities = [
+        { player: "Player1", activity: "Leveled Fishing to 75", time: "1h ago" },
+        { player: "Player2", activity: "Received drop: Dragon Warhammer", time: "3h ago" },
+        { player: "Player3", activity: "Completed quest: Dragon Slayer II", time: "5h ago" }
+      ];
+    }
+    
+    this.render();
+  }
+  
+  render() {
+    let html = `
+      <div class="panel-content">
+        <div class="panel-header">
+          <h3 class="panel-title">Group Activities</h3>
+          <div class="data-source-indicator">
+            <span class="source-badge ${this.dataSource === "plugin" ? "plugin" : ""}"
+                  title="Data from RuneLite Plugin">P</span>
+          </div>
+        </div>
+    `;
+    
+    if (this.loading) {
+      html += `<div class="loading">Loading activities...</div>`;
+    } else if (this.error) {
+      html += `
+        <div class="error">
+          <p>Error loading activities: ${this.error}</p>
+          <button class="retry-button">Retry</button>
+        </div>
+      `;
+    } else {
+      html += `<div class="activities-list">`;
+      
+      if (this.activities.length === 0) {
+        html += `<div class="empty-state">No activities recorded yet</div>`;
+      } else {
+        this.activities.forEach(activity => {
+          html += `
+            <div class="activity-item">
+              <span class="activity-player">${activity.player}</span>
+              <span class="activity-text">${activity.activity}</span>
+              <span class="activity-time">${activity.time}</span>
+            </div>
+          `;
+        });
+      }
+      
+      html += `</div>`;
+    }
+    
+    html += `</div>`;
+    
+    this.innerHTML = html;
+    
+    // Add event listeners
+    if (!this.loading && this.error) {
+      const retryButton = this.querySelector(".retry-button");
+      if (retryButton) {
+        this.addEvent(retryButton, "click", () => this.loadActivities());
+      }
+    }
+  }
+}
+
+// Register the custom element
+customElements.define("group-panel-activities", GroupPanelActivities);' > public/js/panels/group-panel-activities.js
+
+# Slayers Panel 
+RUN echo 'import { BaseElement } from "../utils/base-element.js";
+import { pubsub } from "../utils/pubsub.js";
+
+class GroupPanelSlayers extends BaseElement {
+  constructor() {
+    super();
+    this.slayerTasks = [];
+    this.loading = true;
+    this.error = null;
+    this.dataSource = "plugin";
+  }
+
+  connectedCallback() {
+    this.render();
+    this.loadSlayerTasks();
+    
+    // Subscribe to data updates
+    const unsubscribe = pubsub.subscribe("data-updated", () => this.loadSlayerTasks());
+    this.eventUnbinders.push(unsubscribe);
+  }
+  
+  async loadSlayerTasks() {
+    this.loading = true;
+    this.render();
+    
+    try {
+      const response = await fetch("http://localhost:5000/api/slayer-tasks");
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      this.slayerTasks = data;
+      this.dataSource = "plugin";
+      this.loading = false;
+      this.error = null;
+    } catch (err) {
+      console.error("Error loading slayer tasks:", err);
+      this.error = err.message;
+      this.loading = false;
+      this.dataSource = "mock"; // Fallback to mock data
+      
+      // Mock data for fallback
+      this.slayerTasks = [
+        { player: "Player1", monster: "Abyssal Demons", amount: 145, remaining: 72 },
+        { player: "Player2", monster: "Gargoyles", amount: 198, remaining: 198 },
+        { player: "Player3", monster: "Hydras", amount: 175, remaining: 0 }
+      ];
+    }
+    
+    this.render();
+  }
+  
+  render() {
+    let html = `
+      <div class="panel-content">
+        <div class="panel-header">
+          <h3 class="panel-title">Slayer Tasks</h3>
+          <div class="data-source-indicator">
+            <span class="source-badge ${this.dataSource === "plugin" ? "plugin" : ""}"
+                  title="Data from RuneLite Plugin">P</span>
+          </div>
+        </div>
+    `;
+    
+    if (this.loading) {
+      html += `<div class="loading">Loading slayer tasks...</div>`;
+    } else if (this.error) {
+      html += `
+        <div class="error">
+          <p>Error loading slayer tasks: ${this.error}</p>
+          <button class="retry-button">Retry</button>
+        </div>
+      `;
+    } else {
+      html += `<div class="slayer-tasks-list">`;
+      
+      if (this.slayerTasks.length === 0) {
+        html += `<div class="empty-state">No slayer tasks assigned yet</div>`;
+      } else {
+        this.slayerTasks.forEach(task => {
+          const progress = ((task.amount - task.remaining) / task.amount) * 100;
+          
+          html += `
+            <div class="slayer-task-item">
+              <div class="task-header">
+                <span class="task-player">${task.player}</span>
+                <span class="task-monster">${task.monster}</span>
+              </div>
+              <div class="task-progress-container">
+                <div class="task-progress-bar" style="width: ${progress}%"></div>
+                <span class="task-progress-text">${task.amount - task.remaining}/${task.amount}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+      
+      html += `</div>`;
+    }
+    
+    html += `</div>`;
+    
+    this.innerHTML = html;
+    
+    // Add event listeners
+    if (!this.loading && this.error) {
+      const retryButton = this.querySelector(".retry-button");
+      if (retryButton) {
+        this.addEvent(retryButton, "click", () => this.loadSlayerTasks());
+      }
+    }
+    
+    // Add styles
+    const style = document.createElement("style");
+    style.textContent = `
+      .slayer-task-item {
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+      
+      .task-player {
+        color: var(--orange);
+        font-weight: bold;
+      }
+      
+      .task-progress-container {
+        height: 12px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+      }
+      
+      .task-progress-bar {
+        height: 100%;
+        background: var(--orange);
+      }
+      
+      .task-progress-text {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 10px;
+        line-height: 12px;
+      }
+    `;
+    this.appendChild(style);
+  }
+}
+
+// Register the custom element
+customElements.define("group-panel-slayers", GroupPanelSlayers);' > public/js/panels/group-panel-slayers.js
+
+# Create main HTML
+RUN echo '<!DOCTYPE html>
+<html>
+<head>
+  <title>Group Ironmen Custom Panels</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/panels.css">
+</head>
+<body>
+  <h1>Group Ironmen Custom Panels</h1>
+  
+  <div class="panel-container">
+    <group-panel-activities></group-panel-activities>
+    <group-panel-slayers></group-panel-slayers>
+  </div>
+
+  <script type="module">
+    // Import the panels
+    import "/js/panels/group-panel-activities.js";
+    import "/js/panels/group-panel-slayers.js";
+    
+    // Initialize pubsub system
+    import { pubsub } from "/js/utils/pubsub.js";
+    
+    // Periodically refresh data
+    setInterval(() => {
+      console.log("Refreshing panel data...");
+      pubsub.publish("data-updated", {});
+    }, 30000); // Every 30 seconds
+    
+    // Log when all panels are loaded
+    window.addEventListener("load", () => {
+      console.log("All Group Ironmen custom panels loaded!");
+    });
+  </script>
+</body>
+</html>' > public/index.html
+
+# Create server.js file
+RUN echo 'const express = require("express");
+const path = require("path");
+const app = express();
+const port = 4000;
+
+// Serve static files
+app.use(express.static("public"));
+
+// Handle all routes
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Group Ironmen custom panels running at http://localhost:${port}`);
+});
+
+// Log API endpoint for reference
+console.log(`Backend API endpoint: ${process.env.HOST_URL || "http://localhost:5000"}/api`);
+' > server.js
 
 # Start the server
 CMD ["node", "server.js"]
