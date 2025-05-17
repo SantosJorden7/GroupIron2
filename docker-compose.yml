@@ -10,9 +10,10 @@ services:
     container_name: group-ironmen-tracker-frontend
     ports:
       - 4000:4000 # replace this if using a docker-compatible reverse proxy like traefik
-    volumes:
-      - ./site:/app
-      - /app/node_modules
+    # volumes commented out for build testing
+    # volumes:
+    #   - ./site:/app
+    #   - /app/node_modules
   group-ironmen-tracker-backend:
     build:
       context: ./server

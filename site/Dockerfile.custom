@@ -12,64 +12,69 @@ RUN npm install --ignore-scripts
 # Copy all project files
 COPY . .
 
-# Create required directories
+# Create required directories and setup files
 RUN mkdir -p public
 RUN mkdir -p public/data
 RUN mkdir -p public/fonts
+RUN mkdir -p public/map
 
-# Copy essential resource files
-RUN cp -r resources/* public/ || true
+# Create required data files for build
+RUN echo '[]' > public/data/map_icons.json
+RUN echo '[]' > public/data/map_labels.json
 
-# Ensure the app builds correctly by creating any missing required files
-RUN if [ ! -f public/data/map_icons.json ]; then echo '[]' > public/data/map_icons.json; fi
-RUN if [ ! -f public/data/map_labels.json ]; then echo '[]' > public/data/map_labels.json; fi
-RUN if [ ! -d public/map ]; then mkdir -p public/map; fi
+# Create simplified stand-alone HTML for testing custom panels
+RUN echo '<!DOCTYPE html>' > public/index.html
+RUN echo '<html><head><title>Group Ironmen Custom Panels</title>' >> public/index.html
+RUN echo '<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />' >> public/index.html
+RUN echo '<style>' >> public/index.html
+RUN echo 'body { margin: 0; padding: 20px; font-family: sans-serif; background: #111; color: #eee; }' >> public/index.html
+RUN echo ':root { --orange: #ff981f; --background: #111111; --primary-text: #ffffff; --secondary-text: rgba(255,255,255,0.6); --border: #474747; }' >> public/index.html
+RUN echo '.panel-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }' >> public/index.html
+RUN echo '.panel-content { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px; padding: 16px; }' >> public/index.html
+RUN echo 'h1 { color: var(--orange); text-align: center; margin-bottom: 30px; }' >> public/index.html
+RUN echo '@font-face { font-family: "rsbold"; src: url("/fonts/RuneScape-Bold-12.woff2") format("woff2"); }' >> public/index.html
+RUN echo '@font-face { font-family: "rssmall"; src: url("/fonts/RuneScape-Plain-11.woff2") format("woff2"); }' >> public/index.html
+RUN echo '</style>' >> public/index.html
+RUN echo '</head><body>' >> public/index.html
+RUN echo '<h1>Group Ironmen Custom Panels</h1>' >> public/index.html
+RUN echo '<div class="panel-container">' >> public/index.html
+RUN echo '<group-panel-activities></group-panel-activities>' >> public/index.html
+RUN echo '<group-panel-slayers></group-panel-slayers>' >> public/index.html
+RUN echo '<group-panel-valuable-drops></group-panel-valuable-drops>' >> public/index.html
+RUN echo '<group-panel-challenges></group-panel-challenges>' >> public/index.html
+RUN echo '<group-panel-dps-calculator></group-panel-dps-calculator>' >> public/index.html
+RUN echo '<group-panel-boss-strategy></group-panel-boss-strategy>' >> public/index.html
+RUN echo '<group-panel-shared-calendar></group-panel-shared-calendar>' >> public/index.html
+RUN echo '<group-panel-group-milestones></group-panel-group-milestones>' >> public/index.html
+RUN echo '</div>' >> public/index.html
+RUN echo '<script type="module">' >> public/index.html
+RUN echo 'import "./panels/group-panel-activities.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-slayers.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-valuable-drops.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-challenges.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-dps-calculator.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-boss-strategy.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-shared-calendar.js";' >> public/index.html
+RUN echo 'import "./panels/group-panel-group-milestones.js";' >> public/index.html
+RUN echo '</script>' >> public/index.html
+RUN echo '</body></html>' >> public/index.html
 
-# Add missing fonts directory if not exists
-RUN mkdir -p public/fonts
+# Create custom server script for direct panel testing
+RUN echo 'const express = require("express");' > scripts/custom-panel-server.js
+RUN echo 'const path = require("path");' >> scripts/custom-panel-server.js
+RUN echo 'const app = express();' >> scripts/custom-panel-server.js
+RUN echo 'const port = 4000;' >> scripts/custom-panel-server.js
+RUN echo 'app.use(express.static("public"));' >> scripts/custom-panel-server.js
+RUN echo 'app.use(express.static("src"));' >> scripts/custom-panel-server.js
+RUN echo 'app.get("*", (req, res) => {' >> scripts/custom-panel-server.js
+RUN echo '  res.sendFile(path.resolve("public", "index.html"));' >> scripts/custom-panel-server.js
+RUN echo '});' >> scripts/custom-panel-server.js
+RUN echo 'app.listen(port, () => {' >> scripts/custom-panel-server.js
+RUN echo '  console.log(`Group Ironmen custom panels server running at http://localhost:${port}`);' >> scripts/custom-panel-server.js
+RUN echo '});' >> scripts/custom-panel-server.js
 
-# Build the application - this will generate the index.html and app.js files
-RUN node build.js
+# Create a custom start script for the package.json
+RUN node -e "const pkg = require('./package.json'); pkg.scripts.customPanels = 'node scripts/custom-panel-server.js'; require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
-# Verify the build output
-RUN ls -la public/
-
-# Fallback mechanism in case the build fails to create index.html
-RUN if [ ! -f public/index.html ]; then \
-    echo '<!DOCTYPE html>' > public/index.html && \
-    echo '<html>' >> public/index.html && \
-    echo '<head>' >> public/index.html && \
-    echo '  <title>Group Ironmen</title>' >> public/index.html && \
-    echo '  <meta charset="UTF-8" />' >> public/index.html && \
-    echo '  <meta name="viewport" content="width=device-width, initial-scale=1" />' >> public/index.html && \
-    echo '  <style>' >> public/index.html && \
-    echo '    body { font-family: sans-serif; background: var(--background); color: var(--primary-text); }' >> public/index.html && \
-    echo '    :root {' >> public/index.html && \
-    echo '      --orange: #ff981f;' >> public/index.html && \
-    echo '      --background: #111111;' >> public/index.html && \
-    echo '      --primary-text: #ffffff;' >> public/index.html && \
-    echo '      --border: #474747;' >> public/index.html && \
-    echo '    }' >> public/index.html && \
-    echo '  </style>' >> public/index.html && \
-    echo '</head>' >> public/index.html && \
-    echo '<body>' >> public/index.html && \
-    echo '  <loading-screen></loading-screen>' >> public/index.html && \
-    echo '  <app-initializer></app-initializer>' >> public/index.html && \
-    echo '  <script src="/app.js"></script>' >> public/index.html && \
-    echo '</body>' >> public/index.html && \
-    echo '</html>' >> public/index.html; \
-    fi
-
-# Fallback mechanism in case the build fails to create app.js
-RUN if [ ! -f public/app.js ]; then \
-    echo 'console.log("Loading Group Ironmen application...");' > public/app.js; \
-    echo 'document.addEventListener("DOMContentLoaded", function() {' >> public/app.js; \
-    echo '  const loadingScreen = document.querySelector("loading-screen");' >> public/app.js; \
-    echo '  if (loadingScreen) {' >> public/app.js; \
-    echo '    loadingScreen.setAttribute("loading-message", "Application is starting up...");' >> public/app.js; \
-    echo '  }' >> public/app.js; \
-    echo '});' >> public/app.js; \
-    fi
-
-# Use the standard server
-CMD ["npm", "run", "serve"]
+# Use the custom panels server for testing
+CMD ["npm", "run", "customPanels"]
